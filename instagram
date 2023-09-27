@@ -1,5 +1,6 @@
 from selenium import webdriver
 import time
+import pandas as pd
 
 web = "https://www.instagram.com/"
 driver = webdriver.Firefox()
@@ -7,16 +8,17 @@ driver.get(web)
 time.sleep(4)
 user = driver.find_element(by='xpath', value='//input[@name="username"]')
 pasw = driver.find_element(by='xpath', value='//input[@name="password"]')
-user.send_keys("muhlisasri")
-pasw.send_keys("Stroom428371")
+user.send_keys("YOUR_USERNAME")
+pasw.send_keys("YOUR_PASSWORD")
 time.sleep(3)
 butn = driver.find_element(by='xpath', value='//form/div/div[3]')
 butn.click()
 time.sleep(10)
 
-userlink = "https://www.instagram.com/python.hub/"
+userlink = "https://www.instagram.com/muhlisasri/"
 driver.get(userlink)
 time.sleep(10)
+post_url = set()
 # Get the initial scroll height
 last_height = driver.execute_script("return document.body.scrollHeight")
 while True:
@@ -24,6 +26,11 @@ while True:
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
     # Wait to load page
     time.sleep(5)
+    feeds = driver.find_elements(by="xpath", value="//article/div/div/div/div/a")
+    for feed in feeds:
+        url = feed.get_attribute('href')
+        post_url.add(url)
+        print(url)
     # Calculate new scroll height and compare it with last scroll height
     new_height = driver.execute_script("return document.body.scrollHeight")
     if new_height == last_height:  # if the new and last height are equal, it means that there isn't any new page to load, so we stop scrolling
@@ -31,9 +38,7 @@ while True:
     else:
         last_height = new_height
 
-feeds = driver.find_elements(by="xpath", value="//article/div/div/div/div/a")
-post_url = set()
-for feed in feeds:
-    url = feed.get_attribute('href')
-    post_url.add(url)
-    print(url)
+post_url = list(post_url)
+data ={'URL' : post_url}
+df = pd.DataFrame(data)
+df.to_csv("instagram.csv", index=False)
